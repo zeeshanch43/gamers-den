@@ -5,17 +5,63 @@
 
 using namespace std;
 
-// Gloabal variables
+// Constants
 const int gsize = 20;
-const int maxPrice = INT_MAX;
+const int maxPrice = INT_MAX; 
 const int minPrice = INT_MIN;
 const int maxBuyers = 20;
-string buyerUsernames[maxBuyers];
-string buyerPasswords[maxBuyers];
-float buyerBalances[maxBuyers];
-int currentBuyerCount = 0;
 
-// MenuDisplay
+// Structs
+struct Buyer
+{
+    string username;
+    string password;
+    float balance;
+};
+
+struct Game
+{
+    string name;
+    float price;
+};
+
+struct Component
+{
+    string name;
+    float price;
+};
+
+// Global variables
+Buyer buyers[maxBuyers];
+Game games[gsize];
+Component components[gsize];
+int currentBuyerCount = 0;
+int gameLimit = 0;
+int componentLimit = 0;
+
+// Function declarations
+void menu();
+void menuOption();
+void sellerDisplay();
+void buyerDisplay();
+bool verify(string &user, string &pwd);
+void createBuyerAccount();
+void removeBuyerAccount();
+void addGame();
+void listGames();
+void removeGame();
+void addComponent();
+void listComponents();
+void removeComponent();
+void searchGame(bool &found);
+void filterGames();
+void buyGame(int buyerIndex);
+void buyComponent(int buyerIndex);
+bool verifyBuyer(string &user, string &pwd, int &buyerIndex);
+void saveData();
+void loadData();
+
+// Function definitions
 void menu()
 {
     cout << "=======================================================================================" << endl;
@@ -28,13 +74,13 @@ void menu()
     cout << "      #####  #     # #     # ####### #     #  #####     ######  ####### #     # " << endl;
     cout << "=======================================================================================" << endl;
 }
-// menuOption
+
 void menuOption()
 {
     cout << "1.Login as seller" << setw(25) << "2.Login as buyer" << setw(25) << "3.Create buyer account" << setw(20) << "0.Exit" << endl;
     cout << "choose an option:";
 }
-// sellerOption
+
 void sellerDisplay()
 {
     menu();
@@ -47,7 +93,7 @@ void sellerDisplay()
     cout << "7.Remove Buyer Account" << endl;
     cout << "0.Logout" << endl;
 }
-// buyerOption
+
 void buyerDisplay()
 {
     menu();
@@ -59,41 +105,26 @@ void buyerDisplay()
     cout << "6.Buy component" << endl;
     cout << "0.Logout" << endl;
 }
-// check seller name and password
+
 bool verify(string &user, string &pwd)
 {
     cout << "Username:";
     cin >> user;
     cout << "Password:";
     cin >> pwd;
-    if (user == "a" && pwd == "z")
-    {
-        return true;
-    }
-    else
-    {
-        cout << "YOU ARE NOT THE ONE!" << endl;
-        return false;
-    }
+    return (user == "a" && pwd == "z");
 }
-// creating account
-void createBuyerAccount(string buyerUsernames[], string buyerPasswords[], float buyerBalances[], int &currentBuyerCount)
+
+void createBuyerAccount()
 {
     if (currentBuyerCount < maxBuyers)
     {
-        string username, password;
-        float balance;
         cout << "Enter your desired username:";
-        cin >> username;
+        cin >> buyers[currentBuyerCount].username;
         cout << "Enter your password:";
-        cin >> password;
+        cin >> buyers[currentBuyerCount].password;
         cout << "Enter your initial balance:";
-        cin >> balance;
-        cin.ignore(256, '\n');
-        cin.clear();
-        buyerUsernames[currentBuyerCount] = username;
-        buyerPasswords[currentBuyerCount] = password;
-        buyerBalances[currentBuyerCount] = balance;
+        cin >> buyers[currentBuyerCount].balance;
         currentBuyerCount++;
         cout << "Account created successfully!" << endl;
     }
@@ -102,8 +133,8 @@ void createBuyerAccount(string buyerUsernames[], string buyerPasswords[], float 
         cout << "ACCOUNTS FULL" << endl;
     }
 }
-// remove account
-void removeBuyerAccount(string buyerUsernames[], string buyerPasswords[], float buyerBalances[], int &currentBuyerCount)
+
+void removeBuyerAccount()
 {
     if (currentBuyerCount == 0)
     {
@@ -115,7 +146,7 @@ void removeBuyerAccount(string buyerUsernames[], string buyerPasswords[], float 
     cout << "******************************************************" << endl;
     for (int i = 0; i < currentBuyerCount; i++)
     {
-        cout << setw(5) << i + 1 << "." << setw(25) << buyerUsernames[i] << setw(25) << buyerBalances[i] << "$" << endl;
+        cout << setw(5) << i + 1 << "." << setw(25) << buyers[i].username << setw(25) << buyers[i].balance << "$" << endl;
     }
     cout << "******************************************************" << endl;
     int choice;
@@ -123,36 +154,34 @@ void removeBuyerAccount(string buyerUsernames[], string buyerPasswords[], float 
     cin >> choice;
     while (!cin || choice < 1 || choice > currentBuyerCount)
     {
-        cout << "Wrong input.Enter again:";
+        cout << "Wrong input. Enter again:";
         cin.clear();
         cin.ignore(255, '\n');
         cin >> choice;
     }
     for (int i = choice - 1; i < currentBuyerCount - 1; i++)
     {
-        buyerUsernames[i] = buyerUsernames[i + 1];
-        buyerPasswords[i] = buyerPasswords[i + 1];
-        buyerBalances[i] = buyerBalances[i + 1];
+        buyers[i] = buyers[i + 1];
     }
     currentBuyerCount--;
     cout << "Buyer account removed successfully!" << endl;
 }
-// add game
-void addGame(string games[], float gamePrices[], int &gameLimit, const int minPrice, const int maxPrice)
+
+void addGame()
 {
     if (gameLimit < gsize)
     {
         cout << "Enter the game you want to add:";
         cin.ignore();
-        getline(cin, games[gameLimit]);
+        getline(cin, games[gameLimit].name);
         cout << "Enter the price of the game:";
-        cin >> gamePrices[gameLimit];
-        while (!cin || gamePrices[gameLimit] < minPrice || gamePrices[gameLimit] > maxPrice)
+        cin >> games[gameLimit].price;
+        while (!cin || games[gameLimit].price < minPrice || games[gameLimit].price > maxPrice)
         {
             cin.clear();
             cin.ignore(256, '\n');
             cout << "Enter the price again:";
-            cin >> gamePrices[gameLimit];
+            cin >> games[gameLimit].price;
         }
         gameLimit++;
         cout << "Game added successfully" << endl;
@@ -163,8 +192,8 @@ void addGame(string games[], float gamePrices[], int &gameLimit, const int minPr
     }
     cin.ignore(256, '\n');
 }
-// list game
-void listGames(string games[], float gamePrices[], int gameLimit)
+
+void listGames()
 {
     if (gameLimit == 0)
     {
@@ -177,13 +206,13 @@ void listGames(string games[], float gamePrices[], int gameLimit)
         cout << "******************************************************" << endl;
         for (int i = 0; i < gameLimit; i++)
         {
-            cout << setw(5) << i + 1 << "." << setw(25) << games[i] << setw(25) << gamePrices[i] << "$" << endl;
+            cout << setw(5) << i + 1 << "." << setw(25) << games[i].name << setw(25) << games[i].price << "$" << endl;
         }
         cout << "******************************************************" << endl;
     }
 }
-// remove game
-void removeGame(string games[], float gamePrices[], int &gameLimit)
+
+void removeGame()
 {
     if (gameLimit == 0)
     {
@@ -191,14 +220,13 @@ void removeGame(string games[], float gamePrices[], int &gameLimit)
     }
     else
     {
-        listGames(games, gamePrices, gameLimit);
-        cout << "Enter the gmae your want to remove:";
+        listGames();
+        cout << "Enter the game you want to remove:";
         int choice;
         cin >> choice;
         while (!cin || choice < 1 || choice > gameLimit)
         {
-            cout << endl
-                 << "Invalid choice" << endl;
+            cout << "Invalid choice" << endl;
             cin.clear();
             cin.ignore(255, '\n');
             cout << "Enter again:";
@@ -207,74 +235,72 @@ void removeGame(string games[], float gamePrices[], int &gameLimit)
         for (int i = choice - 1; i < gameLimit - 1; i++)
         {
             games[i] = games[i + 1];
-            gamePrices[i] = gamePrices[i + 1];
         }
-        cout << "Game removed successfully!" << endl;
         gameLimit--;
+        cout << "Game removed successfully!" << endl;
     }
 }
-// add component
-void addComponent(string component[], float componentPrices[], int &componentLimit, const int gsize, const int minPrice, const int maxPrice)
+
+void addComponent()
 {
     if (componentLimit < gsize)
     {
         cout << "Enter the component you want to add:";
         cin.ignore();
-        getline(cin, component[componentLimit]);
+        getline(cin, components[componentLimit].name);
         cout << "Enter the price of the component:";
-        cin >> componentPrices[componentLimit];
-        while (!cin || componentPrices[componentLimit] < minPrice || componentPrices[componentLimit] > maxPrice)
+        cin >> components[componentLimit].price;
+        while (!cin || components[componentLimit].price < minPrice || components[componentLimit].price > maxPrice)
         {
             cin.clear();
             cin.ignore(256, '\n');
             cout << "Enter the price again:";
-            cin >> componentPrices[componentLimit];
+            cin >> components[componentLimit].price;
         }
         componentLimit++;
         cout << "Component added successfully" << endl;
     }
     else
     {
-        cout << "Game list is full" << endl;
+        cout << "Component list is full" << endl;
     }
     cin.ignore(256, '\n');
 }
-// listcomponent
-void listcomponent(string component[], float componentPrices[], int componentLimit)
+
+void listComponents()
 {
     if (componentLimit == 0)
     {
-        cout << "No component available" << endl;
+        cout << "No components available" << endl;
     }
     else
     {
-        cout << "Available component:" << endl;
+        cout << "Available components:" << endl;
         cout << setw(5) << "Sr" << "." << setw(25) << "NAME" << setw(25) << "PRICE" << endl;
         cout << "******************************************************" << endl;
         for (int i = 0; i < componentLimit; i++)
         {
-            cout << setw(5) << i + 1 << "." << setw(25) << component[i] << setw(25) << componentPrices[i] << "$" << endl;
+            cout << setw(5) << i + 1 << "." << setw(25) << components[i].name << setw(25) << components[i].price << "$" << endl;
         }
         cout << "******************************************************" << endl;
     }
 }
-// remove component
-void removeComponent(string component[], float componentPrices[], int &componentLimit)
+
+void removeComponent()
 {
     if (componentLimit == 0)
     {
-        cout << "No component to remove" << endl;
+        cout << "No components to remove" << endl;
     }
     else
     {
-        listcomponent(component, componentPrices, componentLimit);
-        cout << "Enter the component your want to remove:";
+        listComponents();
+        cout << "Enter the component you want to remove:";
         int choice;
         cin >> choice;
         while (!cin || choice < 1 || choice > componentLimit)
         {
-            cout << endl
-                 << "Invalid choice" << endl;
+            cout << "Invalid choice" << endl;
             cin.clear();
             cin.ignore(255, '\n');
             cout << "Enter again:";
@@ -282,15 +308,14 @@ void removeComponent(string component[], float componentPrices[], int &component
         }
         for (int i = choice - 1; i < componentLimit - 1; i++)
         {
-            component[i] = component[i + 1];
-            componentPrices[i] = componentPrices[i + 1];
+            components[i] = components[i + 1];
         }
-        cout << "Component removed successfully!" << endl;
         componentLimit--;
+        cout << "Component removed successfully!" << endl;
     }
 }
-// search game
-void searchgame(string games[], float gamePrices[], int &gameLimit, bool &found)
+
+void searchGame(bool &found)
 {
     if (gameLimit == 0)
     {
@@ -304,9 +329,9 @@ void searchgame(string games[], float gamePrices[], int &gameLimit, bool &found)
         getline(cin, search);
         for (int i = 0; i < gameLimit; i++)
         {
-            if (games[i] == search)
+            if (games[i].name == search)
             {
-                cout << setw(5) << i + 1 << "." << setw(25) << games[i] << setw(25) << gamePrices[i] << "$" << endl;
+                cout << setw(5) << i + 1 << "." << setw(25) << games[i].name << setw(25) << games[i].price << "$" << endl;
                 found = true;
             }
         }
@@ -316,8 +341,8 @@ void searchgame(string games[], float gamePrices[], int &gameLimit, bool &found)
         cout << "No Match" << endl;
     }
 }
-// filter the games
-void filterGames(string games[], float gamePrices[], int gameLimit)
+
+void filterGames()
 {
     if (gameLimit == 0)
     {
@@ -345,9 +370,9 @@ void filterGames(string games[], float gamePrices[], int gameLimit)
         cout << "******************************************************" << endl;
         for (int i = 0; i < gameLimit; i++)
         {
-            if (gamePrices[i] >= minRange && gamePrices[i] <= maxRange)
+            if (games[i].price >= minRange && games[i].price <= maxRange)
             {
-                cout << setw(5) << i + 1 << "." << setw(25) << games[i] << setw(25) << gamePrices[i] << "$" << endl;
+                cout << setw(5) << i + 1 << "." << setw(25) << games[i].name << setw(25) << games[i].price << "$" << endl;
                 found = true;
             }
         }
@@ -358,10 +383,10 @@ void filterGames(string games[], float gamePrices[], int gameLimit)
         cout << "******************************************************" << endl;
     }
 }
-// buy game
-void buyGame(string games[], float gamePrices[], int &gameLimit, int buyerIndex, float buyerBalances[])
+
+void buyGame(int buyerIndex)
 {
-    listGames(games, gamePrices, gameLimit);
+    listGames();
     if (gameLimit == 0)
     {
         cout << "No games available to buy" << endl;
@@ -379,24 +404,24 @@ void buyGame(string games[], float gamePrices[], int &gameLimit, int buyerIndex,
         cout << "Enter again:";
         cin >> gameChoice;
     }
-    if (buyerBalances[buyerIndex] >= gamePrices[gameChoice - 1])
+    if (buyers[buyerIndex].balance >= games[gameChoice - 1].price)
     {
-        buyerBalances[buyerIndex] -= gamePrices[gameChoice - 1];
+        buyers[buyerIndex].balance -= games[gameChoice - 1].price;
         cout << "Game purchased successfully!" << endl;
-        cout << "Your new balance: $" << buyerBalances[buyerIndex] << endl;
+        cout << "Your new balance: $" << buyers[buyerIndex].balance << endl;
     }
     else
     {
         cout << "Insufficient balance" << endl;
     }
 }
-// buy component
-void buyComponent(string component[], float componentPrices[], int &componentLimit, int buyerIndex, float buyerBalances[])
+
+void buyComponent(int buyerIndex)
 {
-    listcomponent(component, componentPrices, componentLimit);
+    listComponents();
     if (componentLimit == 0)
     {
-        cout << "No component available to buy" << endl;
+        cout << "No components available to buy" << endl;
         return;
     }
 
@@ -412,19 +437,19 @@ void buyComponent(string component[], float componentPrices[], int &componentLim
         cin >> componentChoice;
     }
 
-    if (buyerBalances[buyerIndex] >= componentPrices[componentChoice - 1])
+    if (buyers[buyerIndex].balance >= components[componentChoice - 1].price)
     {
-        buyerBalances[buyerIndex] -= componentPrices[componentChoice - 1];
+        buyers[buyerIndex].balance -= components[componentChoice - 1].price;
         cout << "Component purchased successfully!" << endl;
-        cout << "Your new balance: $" << buyerBalances[buyerIndex] << endl;
+        cout << "Your new balance: $" << buyers[buyerIndex].balance << endl;
     }
     else
     {
-        cout << "Insufficient Balance" << endl;
+        cout << "Insufficient balance" << endl;
     }
 }
-// verify
-bool verifyBuyer(string &user, string &pwd, string buyerUsernames[], string buyerPasswords[], int currentBuyerCount, int &buyerIndex)
+
+bool verifyBuyer(string &user, string &pwd, int &buyerIndex)
 {
     cout << "Username:";
     cin >> user;
@@ -432,11 +457,11 @@ bool verifyBuyer(string &user, string &pwd, string buyerUsernames[], string buye
     cin >> pwd;
     for (int i = 0; i < currentBuyerCount; i++)
     {
-        if (buyerUsernames[i] == user && buyerPasswords[i] == pwd)
+        if (buyers[i].username == user && buyers[i].password == pwd)
         {
             buyerIndex = i;
             cout << "Login successful!" << endl;
-            cout << "Your current balance: $" << buyerBalances[i] << endl;
+            cout << "Your current balance: $" << buyers[i].balance << endl;
             return true;
         }
     }
@@ -444,65 +469,16 @@ bool verifyBuyer(string &user, string &pwd, string buyerUsernames[], string buye
     return false;
 }
 
-void saveData(string games[], float gamePrices[], int gameLimit, string component[], float componentPrices[], int componentLimit)
+void saveData()
 {
-    ofstream gameFile("games.txt");
-    ofstream componentFile("component.txt");
-
-    if (gameFile.is_open() && componentFile.is_open())
-    {
-        for (int i = 0; i < gameLimit; i++)
-        {
-            gameFile << games[i] << endl;
-            gameFile << gamePrices[i] << endl;
-        }
-
-        for (int i = 0; i < componentLimit; i++)
-        {
-            componentFile << component[i] << endl;
-            componentFile << componentPrices[i] << endl;
-        }
-
-        gameFile.close();
-        componentFile.close();
-    }
-    else
-    {
-        cout << "Unable to open files" << endl;
-    }
-}
-void loadData(string games[], float gamePrices[], int &gameLimit, string component[], float componentPrices[], int &componentLimit)
-{
-    ifstream gameFile("games.txt"), componentFile("component.txt");
-    if (gameFile.is_open())
-    {
-        while (gameFile >> ws && getline(gameFile, games[gameLimit]) && gameFile >> gamePrices[gameLimit])
-        {
-            gameLimit++;
-        }
-        gameFile.close();
-    }
-
-    if (componentFile.is_open())
-    {
-        while (componentFile >> ws && getline(componentFile, component[componentLimit]) && componentFile >> componentPrices[componentLimit])
-        {
-            componentLimit++;
-        }
-        componentFile.close();
-    }
-}
-
-void saveData(string games[], float gamePrices[], int gameLimit, string component[], float componentPrices[], int componentLimit, string buyerUsernames[], string buyerPasswords[], float buyerBalances[], int currentBuyerCount)
-{
-    ofstream gameFile("games.txt"), componentFile("component.txt"), buyerFile("buyers.txt");
+    ofstream gameFile("games.txt"), componentFile("components.txt"), buyerFile("buyers.txt");
 
     if (gameFile.is_open())
     {
         for (int i = 0; i < gameLimit; i++)
         {
-            gameFile << games[i] << endl
-                     << gamePrices[i] << endl;
+            gameFile << games[i].name << endl
+                     << games[i].price << endl;
         }
         gameFile.close();
     }
@@ -511,8 +487,8 @@ void saveData(string games[], float gamePrices[], int gameLimit, string componen
     {
         for (int i = 0; i < componentLimit; i++)
         {
-            componentFile << component[i] << endl
-                          << componentPrices[i] << endl;
+            componentFile << components[i].name << endl
+                          << components[i].price << endl;
         }
         componentFile.close();
     }
@@ -521,9 +497,44 @@ void saveData(string games[], float gamePrices[], int gameLimit, string componen
     {
         for (int i = 0; i < currentBuyerCount; i++)
         {
-            buyerFile << buyerUsernames[i] << endl
-                      << buyerPasswords[i] << endl
-                      << buyerBalances[i] << endl;
+            buyerFile << buyers[i].username << endl
+                      << buyers[i].password << endl
+                      << buyers[i].balance << endl;
+        }
+        buyerFile.close();
+    }
+}
+
+void loadData()
+{
+    ifstream gameFile("games.txt"), componentFile("components.txt"), buyerFile("buyers.txt");
+    if (gameFile.is_open())
+    {
+        while (getline(gameFile, games[gameLimit].name) && gameFile >> games[gameLimit].price)
+        {
+            gameLimit++;
+            gameFile.ignore();
+        }
+        gameFile.close();
+    }
+
+    if (componentFile.is_open())
+    {
+        while (getline(componentFile, components[componentLimit].name) && componentFile >> components[componentLimit].price)
+        {
+            componentLimit++;
+            componentFile.ignore();
+        }
+        componentFile.close();
+    }
+
+    if (buyerFile.is_open())
+    {
+        while (currentBuyerCount < maxBuyers && getline(buyerFile, buyers[currentBuyerCount].username) &&
+               getline(buyerFile, buyers[currentBuyerCount].password) && buyerFile >> buyers[currentBuyerCount].balance)
+        {
+            currentBuyerCount++;
+            buyerFile.ignore();
         }
         buyerFile.close();
     }
@@ -532,16 +543,12 @@ void saveData(string games[], float gamePrices[], int gameLimit, string componen
 // main
 int main()
 {
-
-    string games[gsize], component[gsize];
-    float gamePrices[gsize], componentPrices[gsize];
-    int gameLimit = 0, componentLimit = 0;
-    int input = -1, seller = -1, buyer = -1, buy, option, buyerIndex;
-    string user, pwd, choice;
-    bool found = false, isSeller = false, isBuyer = false;
+    int input = -1, seller = -1, buyer = -1, buyerIndex;
+    string user, pwd;
+    bool found = false;
 
     // Load data at the start
-    loadData(games, gamePrices, gameLimit, component, componentPrices, componentLimit);
+    loadData();
 
     do
     {
@@ -550,9 +557,7 @@ int main()
         cin >> input;
         while (!cin || input < 0 || input > 3)
         {
-            cout << endl
-                 << "Invalid choice" << endl;
-
+            cout << "Invalid choice" << endl;
             cin.clear();
             cin.ignore(255, '\n');
             menu();
@@ -566,12 +571,11 @@ int main()
                 do
                 {
                     sellerDisplay();
-                    cout << "choose an option:";
+                    cout << "Choose an option:";
                     cin >> seller;
                     while (!cin || seller < 0 || seller > 7)
                     {
-                        cout << endl
-                             << "Invalid choice" << endl;
+                        cout << "Invalid choice" << endl;
                         cin.clear();
                         cin.ignore(255, '\n');
                         sellerDisplay();
@@ -581,35 +585,28 @@ int main()
                     switch (seller)
                     {
                     case 1:
-                        addGame(games, gamePrices, gameLimit, minPrice, maxPrice);
+                        addGame();
                         break;
-
                     case 2:
-                        addComponent(component, componentPrices, componentLimit, gsize, minPrice, maxPrice);
+                        addComponent();
                         break;
-
                     case 3:
-                        removeComponent(component, componentPrices, componentLimit);
+                        removeComponent();
                         break;
-
                     case 4:
-                        removeGame(games, gamePrices, gameLimit);
+                        removeGame();
                         break;
-
                     case 5:
-                        listGames(games, gamePrices, gameLimit);
+                        listGames();
                         break;
-
                     case 6:
-                        listcomponent(component, componentPrices, componentLimit);
+                        listComponents();
                         break;
-
                     case 7:
-                        removeBuyerAccount(buyerUsernames, buyerPasswords, buyerBalances, currentBuyerCount);
+                        removeBuyerAccount();
                         break;
-
                     case 0:
-
+                        break;
                     default:
                         cout << "Invalid Choice" << endl;
                     }
@@ -618,8 +615,7 @@ int main()
         }
         else if (input == 2)
         {
-            isBuyer = verifyBuyer(user, pwd, buyerUsernames, buyerPasswords, currentBuyerCount, buyerIndex);
-            if (isBuyer)
+            if (verifyBuyer(user, pwd, buyerIndex))
             {
                 do
                 {
@@ -628,8 +624,7 @@ int main()
                     cin >> buyer;
                     while (!cin || buyer < 0 || buyer > 6)
                     {
-                        cout << endl
-                             << "Invalid choice" << endl;
+                        cout << "Invalid choice" << endl;
                         cin.clear();
                         cin.ignore(255, '\n');
                         buyerDisplay();
@@ -638,33 +633,26 @@ int main()
                     switch (buyer)
                     {
                     case 1:
-                        listGames(games, gamePrices, gameLimit);
+                        listGames();
                         break;
-
                     case 2:
-                        listcomponent(component, componentPrices, componentLimit);
+                        listComponents();
                         break;
-
                     case 3:
-                        searchgame(games, gamePrices, gameLimit, found);
+                        searchGame(found);
                         break;
-
                     case 4:
-                        filterGames(games, gamePrices, gameLimit);
+                        filterGames();
                         break;
-
                     case 5:
-                        buyGame(games, gamePrices, gameLimit, buyerIndex, buyerBalances);
+                        buyGame(buyerIndex);
                         break;
-
                     case 6:
-                        buyComponent(component, componentPrices, componentLimit, buyerIndex, buyerBalances);
+                        buyComponent(buyerIndex);
                         break;
-
                     case 0:
                         cout << "Logged out" << endl;
                         break;
-
                     default:
                         cout << "Invalid choice" << endl;
                     }
@@ -673,15 +661,13 @@ int main()
         }
         else if (input == 0)
         {
-            saveData(games, gamePrices, gameLimit, component, componentPrices, componentLimit, buyerUsernames, buyerPasswords, buyerBalances, currentBuyerCount);
-
+            saveData();
             cout << "THANKS FOR USING THE SYSTEM :)" << endl;
         }
         else if (input == 3)
         {
-            createBuyerAccount(buyerUsernames, buyerPasswords, buyerBalances, currentBuyerCount);
+            createBuyerAccount();
         }
-
     } while (input != 0);
 
     return 0;
